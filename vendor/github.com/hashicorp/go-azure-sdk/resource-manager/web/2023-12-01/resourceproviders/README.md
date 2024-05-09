@@ -1,7 +1,7 @@
 
-## `github.com/hashicorp/go-azure-sdk/resource-manager/web/2023-01-01/resourceproviders` Documentation
+## `github.com/hashicorp/go-azure-sdk/resource-manager/web/2023-12-01/resourceproviders` Documentation
 
-The `resourceproviders` SDK allows for interaction with the Azure Resource Manager Service `web` (API Version `2023-01-01`).
+The `resourceproviders` SDK allows for interaction with the Azure Resource Manager Service `web` (API Version `2023-12-01`).
 
 This readme covers example usages, but further information on [using this SDK can be found in the project root](https://github.com/hashicorp/go-azure-sdk/tree/main/docs).
 
@@ -9,7 +9,7 @@ This readme covers example usages, but further information on [using this SDK ca
 
 ```go
 import "github.com/hashicorp/go-azure-helpers/resourcemanager/commonids"
-import "github.com/hashicorp/go-azure-sdk/resource-manager/web/2023-01-01/resourceproviders"
+import "github.com/hashicorp/go-azure-sdk/resource-manager/web/2023-12-01/resourceproviders"
 ```
 
 

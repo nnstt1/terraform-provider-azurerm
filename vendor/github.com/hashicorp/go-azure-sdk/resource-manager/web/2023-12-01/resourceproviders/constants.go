@@ -360,6 +360,7 @@ const (
 	SkuNameDynamic          SkuName = "Dynamic"
 	SkuNameElasticIsolated  SkuName = "ElasticIsolated"
 	SkuNameElasticPremium   SkuName = "ElasticPremium"
+	SkuNameFlexConsumption  SkuName = "FlexConsumption"
 	SkuNameFree             SkuName = "Free"
 	SkuNameIsolated         SkuName = "Isolated"
 	SkuNameIsolatedVTwo     SkuName = "IsolatedV2"
@@ -377,6 +378,7 @@ func PossibleValuesForSkuName() []string {
 		string(SkuNameDynamic),
 		string(SkuNameElasticIsolated),
 		string(SkuNameElasticPremium),
+		string(SkuNameFlexConsumption),
 		string(SkuNameFree),
 		string(SkuNameIsolated),
 		string(SkuNameIsolatedVTwo),
@@ -408,6 +410,7 @@ func parseSkuName(input string) (*SkuName, error) {
 		"dynamic":          SkuNameDynamic,
 		"elasticisolated":  SkuNameElasticIsolated,
 		"elasticpremium":   SkuNameElasticPremium,
+		"flexconsumption":  SkuNameFlexConsumption,
 		"free":             SkuNameFree,
 		"isolated":         SkuNameIsolated,
 		"isolatedv2":       SkuNameIsolatedVTwo,

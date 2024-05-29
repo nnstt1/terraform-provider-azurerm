@@ -150,7 +150,7 @@ func TestAccServicePlan_maxElasticWorkerCount(t *testing.T) {
 }
 
 func TestAccServicePlan_automaticScalingForAllSupportedSku(t *testing.T) {
-	for _, sku := range []string{"P1v2", "P0v3"} {
+	for _, sku := range []string{"P1v2", "P2v2", "P3v2", "P0v3", "P1v3", "P2v3", "P3v3", "P1mv3", "P2mv3", "P3mv3", "P4mv3", "P5mv3"} {
 		t.Run(sku, func(t *testing.T) {
 			data := acceptance.BuildTestData(t, "azurerm_service_plan", "test")
 			r := ServicePlanResource{}

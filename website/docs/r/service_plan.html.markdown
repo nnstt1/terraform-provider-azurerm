@@ -55,7 +55,9 @@ The following arguments are supported:
 
 ~> **NOTE:** Requires an Isolated SKU. Use one of `I1`, `I2`, `I3` for `azurerm_app_service_environment`, or `I1v2`, `I2v2`, `I3v2` for `azurerm_app_service_environment_v3`
 
-* `maximum_elastic_worker_count` - (Optional) The maximum number of workers to use in an Elastic SKU Plan. Cannot be set unless using an Elastic SKU.
+* `maximum_elastic_worker_count` - (Optional) The maximum number of workers to use in an Elastic SKU Plan or Premium SKU Plan. Cannot be set unless using an Elastic SKU or Premium SKU.
+
+* `elastic_scale_enabled` - (Optional) Should the Service Plan automatic scaling be enabled. Cannot be set unless using an Premium SKU. Defaults to `false`.
 
 * `worker_count` - (Optional) The number of Workers (instances) to be allocated.
 

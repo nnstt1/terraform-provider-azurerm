@@ -149,6 +149,54 @@ func TestAccServicePlan_maxElasticWorkerCount(t *testing.T) {
 	})
 }
 
+func TestAccServicePlan_automaticScalingForAllSupportedSku(t *testing.T) {
+	for _, sku := range []string{"P1v2", "P0v3"} {
+		t.Run(sku, func(t *testing.T) {
+			data := acceptance.BuildTestData(t, "azurerm_service_plan", "test")
+			r := ServicePlanResource{}
+
+			data.ResourceTest(t, r, []acceptance.TestStep{
+				{
+					Config: r.automaticScalingWithSku(data, 5, sku),
+					Check: acceptance.ComposeTestCheckFunc(
+						check.That(data.ResourceName).ExistsInAzure(r),
+					),
+				},
+				data.ImportStep(),
+				{
+					Config: r.automaticScalingWithSku(data, 10, sku),
+					Check: acceptance.ComposeTestCheckFunc(
+						check.That(data.ResourceName).ExistsInAzure(r),
+					),
+				},
+				data.ImportStep(),
+			})
+		})
+	}
+}
+
+func TestAccServicePlan_automaticScaling(t *testing.T) {
+	data := acceptance.BuildTestData(t, "azurerm_service_plan", "test")
+	r := ServicePlanResource{}
+
+	data.ResourceTest(t, r, []acceptance.TestStep{
+		{
+			Config: r.automaticScaling(data, 5),
+			Check: acceptance.ComposeTestCheckFunc(
+				check.That(data.ResourceName).ExistsInAzure(r),
+			),
+		},
+		data.ImportStep(),
+		{
+			Config: r.automaticScaling(data, 10),
+			Check: acceptance.ComposeTestCheckFunc(
+				check.That(data.ResourceName).ExistsInAzure(r),
+			),
+		},
+		data.ImportStep(),
+	})
+}
+
 func TestAccServicePlan_memoryOptimized(t *testing.T) {
 	data := acceptance.BuildTestData(t, "azurerm_service_plan", "test")
 	r := ServicePlanResource{}
@@ -388,6 +436,62 @@ resource "azurerm_service_plan" "test" {
   location                     = azurerm_resource_group.test.location
   sku_name                     = "%[3]s"
   os_type                      = "Linux"
+  maximum_elastic_worker_count = %[4]d
+
+  tags = {
+    environment = "AccTest"
+    Foo         = "bar"
+  }
+}
+`, data.RandomInteger, data.Locations.Primary, sku, count)
+}
+
+func (r ServicePlanResource) automaticScaling(data acceptance.TestData, count int) string {
+	return fmt.Sprintf(`
+provider "azurerm" {
+  features {}
+}
+
+resource "azurerm_resource_group" "test" {
+  name     = "acctestRG-appserviceplan-%[1]d"
+  location = "%s"
+}
+
+resource "azurerm_service_plan" "test" {
+  name                         = "acctest-SP-%[1]d"
+  resource_group_name          = azurerm_resource_group.test.name
+  location                     = azurerm_resource_group.test.location
+  sku_name                     = "P0v3"
+  os_type                      = "Linux"
+  elastic_scale_enabled        = true
+  maximum_elastic_worker_count = %[3]d
+
+  tags = {
+    environment = "AccTest"
+    Foo         = "bar"
+  }
+}
+`, data.RandomInteger, data.Locations.Primary, count)
+}
+
+func (r ServicePlanResource) automaticScalingWithSku(data acceptance.TestData, count int, sku string) string {
+	return fmt.Sprintf(`
+provider "azurerm" {
+  features {}
+}
+
+resource "azurerm_resource_group" "test" {
+  name     = "acctestRG-appserviceplan-%[1]d"
+  location = "%s"
+}
+
+resource "azurerm_service_plan" "test" {
+  name                         = "acctest-SP-%[1]d"
+  resource_group_name          = azurerm_resource_group.test.name
+  location                     = azurerm_resource_group.test.location
+  sku_name                     = "%[3]s"
+  os_type                      = "Linux"
+  elastic_scale_enabled        = true
   maximum_elastic_worker_count = %[4]d
 
   tags = {

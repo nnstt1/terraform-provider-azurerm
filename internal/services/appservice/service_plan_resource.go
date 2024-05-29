@@ -51,6 +51,7 @@ type ServicePlanModel struct {
 	PerSiteScaling            bool              `tfschema:"per_site_scaling_enabled"`
 	Reserved                  bool              `tfschema:"reserved"`
 	WorkerCount               int64             `tfschema:"worker_count"`
+	ElasticScaleEnabled       bool              `tfschema:"elastic_scale_enabled"`
 	MaximumElasticWorkerCount int64             `tfschema:"maximum_elastic_worker_count"`
 	ZoneBalancing             bool              `tfschema:"zone_balancing_enabled"`
 	Tags                      map[string]string `tfschema:"tags"`
@@ -105,6 +106,12 @@ func (r ServicePlanResource) Arguments() map[string]*pluginsdk.Schema {
 			Optional:     true,
 			Computed:     true,
 			ValidateFunc: validation.IntAtLeast(1),
+		},
+
+		"elastic_scale_enabled": {
+			Type:     pluginsdk.TypeBool,
+			Optional: true,
+			Default:  false,
 		},
 
 		"maximum_elastic_worker_count": {
@@ -198,6 +205,13 @@ func (r ServicePlanResource) Create() sdk.ResourceFunc {
 				appServicePlan.Properties.MaximumElasticWorkerCount = pointer.To(servicePlan.MaximumElasticWorkerCount)
 			}
 
+			if servicePlan.ElasticScaleEnabled {
+				if !isServicePlanSupportAutomaticScaling(servicePlan.Sku) {
+					return fmt.Errorf("`elastic_scale_enabled` can only be specified with Premium Skus")
+				}
+				appServicePlan.Properties.ElasticScaleEnabled = pointer.To(servicePlan.ElasticScaleEnabled)
+			}
+
 			if servicePlan.WorkerCount != 0 {
 				appServicePlan.Sku.Capacity = pointer.To(servicePlan.WorkerCount)
 			}
@@ -271,6 +285,8 @@ func (r ServicePlanResource) Read() sdk.ResourceFunc {
 					state.ZoneBalancing = utils.NormaliseNilableBool(props.ZoneRedundant)
 
 					state.MaximumElasticWorkerCount = pointer.From(props.MaximumElasticWorkerCount)
+
+					state.ElasticScaleEnabled = utils.NormaliseNilableBool(props.ElasticScaleEnabled)
 				}
 				state.Tags = pointer.From(model.Tags)
 			}
@@ -344,6 +360,13 @@ func (r ServicePlanResource) Update() sdk.ResourceFunc {
 				model.Sku.Capacity = pointer.To(state.WorkerCount)
 			}
 
+			if metadata.ResourceData.HasChange("elastic_scale_enabled") {
+				if metadata.ResourceData.HasChange("elastic_scale_enabled") && !isServicePlanSupportAutomaticScaling(state.Sku) {
+					return fmt.Errorf("`elastic_scale_enabled` can only be specified with Premium Skus")
+				}
+				model.Properties.ElasticScaleEnabled = pointer.To(state.ElasticScaleEnabled)
+			}
+
 			if metadata.ResourceData.HasChange("maximum_elastic_worker_count") {
 				if metadata.ResourceData.HasChange("maximum_elastic_worker_count") && !isServicePlanSupportScaleOut(state.Sku) {
 					return fmt.Errorf("`maximum_elastic_worker_count` can only be specified with Elastic Premium Skus")
@@ -365,6 +388,15 @@ func isServicePlanSupportScaleOut(plan string) bool {
 	support = support || strings.HasPrefix(plan, "EP")
 	support = support || strings.HasPrefix(plan, "PC")
 	support = support || strings.HasPrefix(plan, "WS")
+	support = support || strings.HasPrefix(plan, "P") && strings.HasSuffix(plan, "v2")
+	support = support || strings.HasPrefix(plan, "P") && strings.HasSuffix(plan, "v3")
+	return support
+}
+
+func isServicePlanSupportAutomaticScaling(plan string) bool {
+	support := false
+	support = support || strings.HasPrefix(plan, "P") && strings.HasSuffix(plan, "v2")
+	support = support || strings.HasPrefix(plan, "P") && strings.HasSuffix(plan, "v3")
 	return support
 }
 
